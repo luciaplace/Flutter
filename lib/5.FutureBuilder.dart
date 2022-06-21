@@ -9,7 +9,6 @@ void main() {
 }
 //Get요청 보내기
 
-
 class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: key);
 
@@ -19,23 +18,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   var tab = 0;
-  var map ={'name':'john','age':20};
+  var map = {'name': 'john', 'age': 20};
+  var data = [];
 
-  getData() async{
-    var result = await http.get( Uri.parse('https://codingapple1.github.io/app/data.json'));
+  getData() async {
+    var result = await http
+        .get(Uri.parse('https://codingapple1.github.io/app/data.json'));
     var result2 = jsonDecode(result.body);
-    if(result.statusCode == 200){
-      print(result2);
-    }else{
-      throw Exception('Connection Failed');
-    }
+    setState(() {
+      data = result2; //data변수에 get 방식으로 받아온 Json 값을 저장.
+    });
   }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     getData();
-
   }
 
   @override
@@ -51,17 +49,10 @@ class _MyAppState extends State<MyApp> {
           )
         ],
       ),
-      body: Home(),
+      body: Home2(data: data),
       bottomNavigationBar: BottomNavigationBar(
         showUnselectedLabels: false,
         showSelectedLabels: false,
-        currentIndex: tab,
-        onTap: (i) {
-          setState(() {
-            print(i);
-            tab = i;
-          });
-        },
         items: [
           BottomNavigationBarItem(
               label: 'Home',
@@ -77,31 +68,39 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+class Home2 extends StatelessWidget {
+  const Home2({Key? key, this.data}) : super(key: key);
+
+  final data;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(itemCount: 3, itemBuilder: (c, i) {
-      return Column(
-        children: [
-          Image.network('https://codingapple1.github.io/kona.jpg'),
-          Container(
-            constraints: BoxConstraints(maxWidth: 600),
-            padding: EdgeInsets.all(20),
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('좋아요'),
-                Text('글쓴이'),
-                Text('글내용')
-
-              ],
-            ),
-          )
-        ],
+    if (data.isNotEmpty) {
+      return ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (c, i) {
+          return Column(
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: 600),
+                padding: EdgeInsets.all(20),
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.network(data[i]['image']),
+                    Text('좋아요'),
+                    Text('글쓴이'),
+                    Text('글내용')
+                  ],
+                ),
+              )
+            ],
+          );
+        },
       );
-    },);
+    } else {
+      return Text('Loading');
+    }
   }
 }
